@@ -53,6 +53,7 @@ class GpsPoller:
                         if len(line) == 0:
                             continue
                         try:
+                            self.log.debug("GPS line: {}".format(line))
                             fix = json.loads(line)
                             if 'class' not in fix:
                                 continue
