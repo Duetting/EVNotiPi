@@ -55,7 +55,7 @@ class ATBASE:
                 if expect:
                     expect = bytes(expect, 'ascii')
                     if expect not in ret:
-                        raise Exception(b'Expected {}, got {}'.format(expect,ret))
+                        raise Exception('Expected {}, got {}'.format(expect,ret))
 
         except serial.SerialTimeoutException:
             ret = b'TIMEOUT'
@@ -195,6 +195,6 @@ class ATBASE:
         if self.watchdog:
             return self.watchdog.getShutdownFlag() == 0
         else:
-            #return self.getObdVoltage() > 13.0
-            return GPIO.input(self.pin) == False
+            return self.getObdVoltage() > 13.0
+            #return GPIO.input(self.pin) == False
 
