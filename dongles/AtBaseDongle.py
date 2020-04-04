@@ -9,11 +9,10 @@ import logging
 class ATBASE:
     def __init__(self, dongle, watchdog = None):
         self.log = logging.getLogger("EVNotiPi/{}".format(__name__))
-        self.log.info("Initializing PiOBD2Hat")
+        self.log.info("Initializing " + __name__)
 
         self.serial_lock = Lock()
         self.serial = serial.Serial(dongle['port'], baudrate=dongle['speed'], timeout=1)
-        self.initDongle()
 
         self.config = dongle
         self.watchdog = watchdog
@@ -22,11 +21,19 @@ class ATBASE:
             self.pin = dongle['shutdown_pin']
             GPIO.setup(self.pin, GPIO.IN, pull_up_down=dongle['pup_down'])
 
-        self.current_canid = 0
-        self.current_canfilter = 0
-        self.current_canmask = 0
+        self.initialized = False
+
+    def initDongle():
+        if not self.inititalized:
+            self.current_canid = 0
+            self.current_canfilter = 0
+            self.current_canmask = 0
+            self.initialized = True
+
 
     def talkToDongle(self, cmd, expect=None):
+        self.initDongle()
+
         try:
             with self.serial_lock:
                 while self.serial.in_waiting:   # Clear the input buffer
@@ -195,6 +202,9 @@ class ATBASE:
         if self.watchdog:
             return self.watchdog.getShutdownFlag() == 0
         else:
-            return self.getObdVoltage() > 13.0
-            #return GPIO.input(self.pin) == False
-
+            try:
+                return self.getObdVoltage() > 13.0
+                #return GPIO.input(self.pin) == False
+            except:
+                self.initalized = False
+                return False
