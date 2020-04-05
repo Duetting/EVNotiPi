@@ -11,7 +11,7 @@ class ELM327(ATBASE):
         self.in_initializing = False
 
     def initDongle(self):
-        if not self.inititalized and not self.in_initializing:
+        if not self.initialized and not self.in_initializing:
             self.in_initializing = True
             try:
                 self.log.info("Initializing ELM327 Dongle")

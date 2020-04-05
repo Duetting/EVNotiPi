@@ -24,7 +24,7 @@ class ATBASE:
         self.initialized = False
 
     def initDongle():
-        if not self.inititalized:
+        if not self.initialized:
             self.current_canid = 0
             self.current_canfilter = 0
             self.current_canmask = 0
@@ -129,6 +129,7 @@ class ATBASE:
 
     def sendCommandEx(self, cmd, cantx, canrx):
         cmd = cmd.hex()
+        self.initDongle()
         self.setCanID(cantx)
         self.setCANRxFilter(canrx)
         self.setCANRxMask(0x1fffffff if self.is_extended else 0x7ff)
@@ -206,5 +207,6 @@ class ATBASE:
                 return self.getObdVoltage() > 13.0
                 #return GPIO.input(self.pin) == False
             except:
-                self.initalized = False
-                return False
+                self.log.debug("Couldn't get odb voltage, car or dongle unavailable")
+                self.initialized = False
+            return False

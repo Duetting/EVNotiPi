@@ -18,6 +18,7 @@ class Car:
         self.dongle = dongle
         self.gps = gps
         self.poll_interval = config['interval']
+        self.caroff_interval = config['caroff_interval']
         self.thread = None
         self.skip_polling = False
         self.running = False
@@ -73,7 +74,7 @@ class Car:
                     self.last_data = now
                 except CanError as e:
                     self.log.warning(e)
-                except NoData:
+                except (NoData, OSError):
                     self.log.info("NO DATA")
                     if not self.dongle.isCarAvailable():
                         self.log.info("Car off detected. Stop polling until car on.")
@@ -117,14 +118,17 @@ class Car:
                     cb(data)
 
             if self.running:
-                if self.poll_interval:
+                if self.skip_polling:
+                    runtime = time() - now
+                    interval = self.caroff_interval - (runtime if runtime > self.caroff_interval else 0)
+                    if interval > 0:
+                        sleep(interval)
+
+                elif self.poll_interval:
                     runtime = time() - now
                     interval = self.poll_interval - (runtime if runtime > self.poll_interval else 0)
                     if interval > 0:
                         sleep(interval)
-
-                elif self.skip_polling:
-                    sleep(1)
 
     def registerData(self, callback):
         if callback not in self.data_callbacks:
