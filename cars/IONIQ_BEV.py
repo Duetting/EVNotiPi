@@ -64,7 +64,7 @@ class IONIQ_BEV(Car):
             # Extended:
             'auxBatteryVoltage':        raw[b2101][31] / 10.0,
 
-            'batteryInletTemperature':  ifbs(raw[b2101][22:23]),
+            'batteryInletTemperature':  ifbs(raw[b2101][24:25]),
             'batteryMaxTemperature':    ifbs(raw[b2101][16:17]),
             'batteryMinTemperature':    ifbs(raw[b2101][17:18]),
 
