@@ -37,6 +37,7 @@ class Car:
     def pollData(self):
         while self.running:
             now = time()
+            self.log.debug("Start polling car data.")
 
             # initialize data with required fields; saves all those checks later
             data = {
@@ -80,6 +81,8 @@ class Car:
                         self.log.info("Car off detected. Stop polling until car on.")
                         self.skip_polling = True
                     sleep(1)
+                except Exception as e:
+                    self.log.error(e)
 
             fix = self.gps.fix()
             if fix and fix['mode'] > 1:

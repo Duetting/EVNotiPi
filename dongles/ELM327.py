@@ -26,10 +26,10 @@ class ELM327(ATBASE):
                 for c,r in cmds:
                     self.sendAtCmd(c, r)
 
-                if self.current_protocol:
-                    setProtocol(self.current_protocol)
+                ATBASE.initDongle()
 
-                super.initDongle()
+                if self.current_protocol:
+                    self.setProtocol(self.current_protocol)
             finally:
                 self.in_initializing = False
 

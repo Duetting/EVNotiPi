@@ -23,7 +23,7 @@ class ATBASE:
 
         self.initialized = False
 
-    def initDongle():
+    def initDongle(self):
         if not self.initialized:
             self.current_canid = 0
             self.current_canfilter = 0

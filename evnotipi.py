@@ -40,12 +40,27 @@ if os.path.exists(args.config):
 else:
     raise Exception('No config found')
 
+loglevel=logging.INFO
 if args.debug:
-    logging.basicConfig(level=logging.DEBUG)
+    loglevel=logging.DEBUG
 elif 'loglevel' in config:
-    logging.basicConfig(level=config['loglevel'])
-else:
-    logging.basicConfig(level=logging.INFO)
+    loglevel=config['loglevel']
+
+# set up logging to file - see previous section for more details
+logging.basicConfig(level=loglevel,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    datefmt='%m-%d %H:%M',
+                    filename='evnotipi.log')
+# define a Handler which writes INFO messages or higher to the sys.stderr
+console = logging.StreamHandler()
+console.setLevel(loglevel)
+# set a format which is simpler for console use
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+# tell the handler to use this format
+console.setFormatter(formatter)
+# add the handler to the root logger
+logging.getLogger('').addHandler(console)
+
 log = logging.getLogger("EVNotiPi")
 
 del args

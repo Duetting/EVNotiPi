@@ -41,14 +41,14 @@ class GpsPoller:
                             if len(line) == 0:
                                 continue
                             try:
-                                self.log.debug("GPS line: {}".format(line))
+                                # self.log.debug("GPS line: {}".format(line))
                                 fix = json.loads(line)
                                 if 'class' not in fix:
                                     continue
 
                                 if fix['class'] == 'TPV' and 'time' in fix:
                                     fix_time = mktime(strptime(fix['time'][:23], "%Y-%m-%dT%H:%M:%S.%f"))
-                                    self.log.info("GPS fix at: {}".format(fix_time))
+                                    # self.log.debug("GPS fix at: {}".format(fix_time))
 
                                     self.last_fix.update({
                                         'device':    fix['device'],
