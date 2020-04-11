@@ -61,7 +61,7 @@ class GpsPoller:
                             if fix['class'] == 'TPV' and fix['mode'] > 1:
                                 fix_time = timegm(strptime(fix['time'],
                                                            "%Y-%m-%dT%H:%M:%S.%fZ"))
-                                self.log.info("GPS fix at: {}".format(fix_time))
+                                self.log.debug("GPS fix at: {}".format(fix_time))
 
                                 self._last_fix.update({
                                     'device':    fix['device'],
