@@ -11,30 +11,45 @@ class Elm327(AtBase):
         self._ret_can_error = (b'BUFFER FULL', B'BUS BUSY', b'BUS ERROR', b'CAN ERROR',
                                b'ERR', b'FB ERROR', b'LP ALERT', b'LV RESET', b'STOPPED',
                                b'UNABLE TO CONNECT')
+        self.current_protocol = ""
+        self.in_initializing = False
 
     def init_dongle(self):
         """ Send some initializing commands to the dongle. """
-        cmds = (('ATZ', 'ELM327'),
-                ('ATE0', 'OK'),
-                ('ATL1', 'OK'),
-                ('ATS0', 'OK'),
-                ('ATH1', 'OK'),
-                ('ATSTFF', 'OK'),
-                ('ATFE', 'OK'))
+        if not self.initialized and not self.in_initializing:
+            self.in_initializing = True
+            try:
+                self.log.info("Initializing ELM327 Dongle")
+                cmds = (('ATZ', None),
+                        ('ATE0', 'OK'),
+                        ('ATL1', 'OK'),
+                        ('ATS0', 'OK'),
+                        ('ATH1', 'OK'),
+                        ('ATSTFF', 'OK'),
+                        ('ATFE', 'OK'))
 
-        for cmd, exp in cmds:
-            self.send_at_cmd(cmd, exp)
+                for cmd, exp in cmds:
+                    self.send_at_cmd(cmd, exp)
+
+                ATBASE.init_dongle()
+
+                if self.current_protocol:
+                    self.setProtocol(self.current_protocol)
+            finally:
+                self.in_initializing = False
 
     def set_protocol(self, prot):
         """ Set the variant of CAN protocol """
-        if prot == 'CAN_11_500':
-            self.send_at_cmd('ATSP6', 'OK')
-            self._is_extended = False
-        elif prot == 'CAN_29_500':
-            self.send_at_cmd('ATSP7', 'OK')
-            self._is_extended = True
-        else:
-            raise ValueError('Unsupported protocol %s' % prot)
+        self.current_protocol = prot
+        if self.initialized:
+            if prot == 'CAN_11_500':
+                self.send_at_cmd('ATSP6', 'OK')
+                self._is_extended = False
+            elif prot == 'CAN_29_500':
+                self.send_at_cmd('ATSP7', 'OK')
+                self._is_extended = True
+            else:
+                raise ValueError('Unsupported protocol %s' % prot)
 
     def set_can_id(self, can_id):
         """ Set CAN id to use for sent frames """

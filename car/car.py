@@ -64,13 +64,14 @@ class Car:
         self._watchdog = watchdog
         self._gps = gps
         self._poll_interval = config['interval']
+        self._caroff_interval = config['caroff_interval']
         self._charge_interval = config['charge_interval'] or config['interval']
         self._thread = None
         self._skip_polling = False
         self._running = False
         self.last_data = monotonic()
         self._data_callbacks = []
-        self.is_available = watchdog.is_car_available
+        self.is_available = self._dongle.isCarAvailable() # watchdog.is_car_available
         self._can_tries = max(1, self._config.get('can_tries', 3))
 
     def read_dongle(self, data):
@@ -95,6 +96,7 @@ class Car:
 
         while self._running:
             now = monotonic()
+            self.log.debug("Start polling car data.")
 
             # initialize data with required fields; saves all those checks later
             data = {
@@ -136,7 +138,7 @@ class Car:
                     log.warning(err)
                     sleep(1)
                     continue
-                except NoData:
+                except (NoData, OSError):
                     log.info("NO DATA")
                     if not self.is_available():
                         log.info("Car off detected. Stop polling until car on.")
@@ -144,6 +146,8 @@ class Car:
                         sleep(1)
                         continue
                     sleep(1)
+                except Exception as e:
+                    log.error(e)
 
             fix = self._gps.fix()
             if fix and fix['mode'] > 1:
@@ -200,13 +204,14 @@ class Car:
                     interval = self._charge_interval - (monotonic() - now)
                     sleep(max(1, interval))
 
+                elif self._skip_polling:
+                    # Limit poll rate if polling shall be skipped
+                    interval = self._caroff_interval - (monotonic() - now)
+                    sleep(max(1, interval))
+
                 elif self._poll_interval > 0:
                     interval = self._poll_interval - (monotonic() - now)
                     sleep(max(0, interval))
-
-                elif self._skip_polling:
-                    # Limit poll rate if polling shall be skipped
-                    sleep(1)
 
     def register_data(self, callback):
         """ Register a callback that get called with new data. """

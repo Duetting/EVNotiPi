@@ -18,21 +18,22 @@ class AtBase:
         self._serial = serial.Serial(dongle['port'],
                                      baudrate=dongle['speed'],
                                      timeout=1)
-        self.init_dongle()
+        self._initialized = False
 
         self._config = dongle
 
-        self._current_canid = 0
-        self._current_canfilter = 0
-        self._current_canmask = 0
-        self._is_extended = False
         # These need to be redefined by the actual dongle module
         self._ret_no_data = None
         self._ret_can_error = None
 
     def init_dongle(self):
         """ Empty method, needs to be overriden"""
-        raise NotImplementedError()
+        if not self._initialized:
+            self._current_canid = 0
+            self._current_canfilter = 0
+            self._current_canmask = 0
+            self._is_extended = False
+            self._initialized = True
 
     def set_can_id(self, can_id):
         """ Empty method, needs to be overriden"""
@@ -48,6 +49,7 @@ class AtBase:
 
     def talk_to_dongle(self, cmd, expect=None):
         """ Send command to dongle and return the response as string. """
+        self.initDongle()
         try:
             with self._serial_lock:
                 while self._serial.in_waiting:   # Clear the input buffer
@@ -147,6 +149,7 @@ class AtBase:
             send to dongle and parse the reponse.
             Also handles filters and masks. """
         cmd = cmd.hex()
+        self.initDongle()
         self.set_can_id(cantx)
         self.set_can_rx_filter(canrx)
         self.set_can_rx_mask(0x1fffffff if self._is_extended else 0x7ff)
@@ -215,3 +218,11 @@ class AtBase:
             raise CanError("Failed Command %s\n%s" % (cmd, ret))
 
         return data
+
+    def isCarAvailable(self):
+        try:
+            return self.get_obd_voltage() > 13.0
+        except:
+            self._log.debug("Couldn't get odb voltage, car or dongle unavailable")
+            self._initialized = False
+        return False
