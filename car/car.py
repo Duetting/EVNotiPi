@@ -71,7 +71,7 @@ class Car:
         self._running = False
         self.last_data = monotonic()
         self._data_callbacks = []
-        self.is_available = self._dongle.isCarAvailable() # watchdog.is_car_available
+        self.is_available = self._dongle.isCarAvailable # watchdog.is_car_available
         self._can_tries = max(1, self._config.get('can_tries', 3))
 
     def read_dongle(self, data):
@@ -96,7 +96,7 @@ class Car:
 
         while self._running:
             now = monotonic()
-            self.log.debug("Start polling car data.")
+            log.debug("Start polling car data.")
 
             # initialize data with required fields; saves all those checks later
             data = {
@@ -126,11 +126,12 @@ class Car:
                 'speed':        None,
                 'fix_mode':     0,
             }
-            if not self._skip_polling or self.is_available():
-                if self._skip_polling:
-                    log.info("Resume polling.")
-                    self._skip_polling = False
+            
+            if self._skip_polling and self.is_available():
+                log.info("Resume polling.")
+                self._skip_polling = False
 
+            if not self._skip_polling:
                 try:
                     self.read_dongle(data)  # readDongle updates data inplace
                     self.last_data = now
@@ -141,7 +142,7 @@ class Car:
                 except (NoData, OSError):
                     log.info("NO DATA")
                     if not self.is_available():
-                        log.info("Car off detected. Stop polling until car on.")
+                        log.info("Car off detected.")
                         self._skip_polling = True
                         sleep(1)
                         continue
@@ -178,7 +179,7 @@ class Car:
             if data['charging'] or data['normalChargePort'] or data['rapidChargePort']:
                 data['speed'] = 0.0
 
-            if hasattr(self._dongle, 'get_obd_voltage'):
+            if not self._skip_polling and self.is_available() and hasattr(self._dongle, 'get_obd_voltage'):
                 data.update({
                     'obdVoltage':       self._dongle.get_obd_voltage(),
                 })

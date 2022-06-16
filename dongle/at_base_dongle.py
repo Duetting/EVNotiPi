@@ -49,7 +49,7 @@ class AtBase:
 
     def talk_to_dongle(self, cmd, expect=None):
         """ Send command to dongle and return the response as string. """
-        self.initDongle()
+        self.init_dongle()
         try:
             with self._serial_lock:
                 while self._serial.in_waiting:   # Clear the input buffer
@@ -149,7 +149,7 @@ class AtBase:
             send to dongle and parse the reponse.
             Also handles filters and masks. """
         cmd = cmd.hex()
-        self.initDongle()
+        self.init_dongle()
         self.set_can_id(cantx)
         self.set_can_rx_filter(canrx)
         self.set_can_rx_mask(0x1fffffff if self._is_extended else 0x7ff)

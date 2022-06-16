@@ -55,11 +55,17 @@ if args.debug:
 elif 'loglevel' in config:
     loglevel=config['loglevel']
 
-# set up logging to file - see previous section for more details
-logging.basicConfig(level=loglevel,
+if 'logfile' in config:
+    # set up logging to file - see previous section for more details
+    logging.basicConfig(level=loglevel,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%m-%d %H:%M',
-                    filename='evnotipi.log')
+                    filename=config['logfile'])
+else:
+    logging.basicConfig(level=loglevel,
+                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                    datefmt='%m-%d %H:%M')
+
 # define a Handler which writes INFO messages or higher to the sys.stderr
 console = logging.StreamHandler()
 console.setLevel(loglevel)

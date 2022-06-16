@@ -16,10 +16,10 @@ class Elm327(AtBase):
 
     def init_dongle(self):
         """ Send some initializing commands to the dongle. """
-        if not self.initialized and not self.in_initializing:
+        if not self._initialized and not self.in_initializing:
             self.in_initializing = True
             try:
-                self.log.info("Initializing ELM327 Dongle")
+                self._log.info("Initializing ELM327 Dongle")
                 cmds = (('ATZ', None),
                         ('ATE0', 'OK'),
                         ('ATL1', 'OK'),
@@ -41,7 +41,7 @@ class Elm327(AtBase):
     def set_protocol(self, prot):
         """ Set the variant of CAN protocol """
         self.current_protocol = prot
-        if self.initialized:
+        if self._initialized:
             if prot == 'CAN_11_500':
                 self.send_at_cmd('ATSP6', 'OK')
                 self._is_extended = False
