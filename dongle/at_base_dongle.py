@@ -144,7 +144,7 @@ class AtBase:
 
         return data
 
-    def send_command_ex(self, cmd, cantx, canrx):
+    def send_command_ex(self, cmd, cantx, canrx, fc_opts=None):
         """ Convert bytearray "cmd" to string,
             send to dongle and parse the reponse.
             Also handles filters and masks. """
