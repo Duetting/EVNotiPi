@@ -15,6 +15,7 @@ class Elm327(AtBase):
         self.in_initializing = False
 
     def init_dongle(self):
+        self._log.debug("Init ELM327 dongle")
         """ Send some initializing commands to the dongle. """
         if not self._initialized and not self.in_initializing:
             self.in_initializing = True
@@ -37,6 +38,7 @@ class Elm327(AtBase):
                     self.set_protocol(self.current_protocol)
             finally:
                 self.in_initializing = False
+            self._log.debug("Initializaton ELM327 dongle finished")
 
     def set_protocol(self, prot):
         """ Set the variant of CAN protocol """

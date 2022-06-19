@@ -27,13 +27,14 @@ class AtBase:
         self._ret_can_error = None
 
     def init_dongle(self):
-        """ Empty method, needs to be overriden"""
+        self._log.debug("Init AtBase dongle")
         if not self._initialized:
             self._current_canid = 0
             self._current_canfilter = 0
             self._current_canmask = 0
             self._is_extended = False
             self._initialized = True
+            self._log.debug("Initializaton AtBase dongle finished")
 
     def set_can_id(self, can_id):
         """ Empty method, needs to be overriden"""
