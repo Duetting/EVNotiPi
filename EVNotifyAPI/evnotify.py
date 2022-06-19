@@ -36,7 +36,7 @@ class EVNotify:
 
             return result.json()
 
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as e:
             raise CommunicationError("connection failed (" + type(e).__name__ + ": "+  (str(e) if len(e.args)==0 else str(e.args[0])) + ")")
         except requests.exceptions.Timeout:
             raise CommunicationError("timeout")
