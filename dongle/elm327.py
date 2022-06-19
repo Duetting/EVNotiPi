@@ -31,7 +31,7 @@ class Elm327(AtBase):
                 for cmd, exp in cmds:
                     self.send_at_cmd(cmd, exp)
 
-                AtBase.init_dongle()
+                AtBase.init_dongle(self)
 
                 if self.current_protocol:
                     self.setProtocol(self.current_protocol)
