@@ -222,7 +222,7 @@ class AtBase:
     def isCarAvailable(self):
         try:
             return self.get_obd_voltage() > 13.0
-        except:
-            self._log.debug("Couldn't get odb voltage, car or dongle unavailable")
+        except Exception as e:
+            self._log.debug("Couldn't get obd voltage, car or dongle unavailable", e, exc_info=True)
             self._initialized = False
         return False
