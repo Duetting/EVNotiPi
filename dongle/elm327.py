@@ -34,7 +34,7 @@ class Elm327(AtBase):
                 AtBase.init_dongle(self)
 
                 if self.current_protocol:
-                    self.setProtocol(self.current_protocol)
+                    self.set_protocol(self.current_protocol)
             finally:
                 self.in_initializing = False
 
