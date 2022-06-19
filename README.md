@@ -44,4 +44,4 @@ I had to make changes to /etc/default/gpsd, or else sometimes the GPS would not 
 - sudo cp config.yaml.template config.yaml
 #### Edit config, follow comments in the file
 - sudo nano config.yaml # nano or any other editor
-
+- sudo mkdir -p /var/cache/evnotipi
