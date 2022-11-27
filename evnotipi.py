@@ -144,6 +144,12 @@ if 'webservice' in config and config['webservice'].get('enable') is True:
     WebService = webservice.WebService(config['webservice'], car)
     Threads.append(WebService)
 
+# Init web service
+if 'mqtt' in config and config['mqtt'].get('enable') is True:
+    import mqttservice
+    MQTTService = mqttservice.MQTTService(config['mqtt'], car)
+    Threads.append(MQTTService)
+
 # Set up signal handling
 
 

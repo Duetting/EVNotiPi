@@ -1,0 +1,79 @@
+""" Transmit data to EVNotify and handle notifications """
+from threading import Thread, Condition
+import logging
+import paho.mqtt.client as mqtt
+import json
+
+
+class MQTTService:
+    """ Interface to MQTT. """
+
+    def __init__(self, config, car):
+        self._log = logging.getLogger("EVNotiPi/MQTT")
+        self._log.info("Initializing MQTT")
+
+        self._car = car
+        self._config = config
+        self._poll_interval = config['interval']
+        self._running = False
+        self._thread = None
+
+        self._data = []
+        self._data_lock = Condition()
+        self._client = mqtt.Client(self._config.get('clientid'))
+        if self._config.get('usetls', True):
+            self._client.tls_set()
+        if self._config.get('uselogger', True):
+            self._client.enable_logger(self._log)
+        if 'user' in self._config:
+            self._client.username_pw_set(self._config.get('user'), self._config.get('password'))
+        self._topic = self._config.get('topic')
+
+    def start(self):
+        """ Start submit thread. """
+        self._running = True
+        self._thread = Thread(target=self.submit_data, name="EVNotiPi/MQTT")
+        self._thread.start()
+        self._car.register_data(self.data_callback)
+        self._client.connect(self._config.get('server'), self._config.get('port', 1883), self._config.get('keepalive', 60))
+
+    def stop(self):
+        """ Stop submit thread. """
+        self._client.disconnect()
+        self._car.unregister_data(self.data_callback)
+        self._running = False
+        with self._data_lock:
+            self._data_lock.notify()
+        self._thread.join()
+
+    def data_callback(self, data):
+        """ Callback to be called from 'car'. """
+        with self._data_lock:
+            self._data = data.copy()
+            self._data_lock.notify()
+
+    def submit_data(self):
+        """ Thread that submits data via MQTT. """
+        log = self._log
+
+        while self._running:
+            with self._data_lock:
+                log.debug('Waiting...')
+                self._data_lock.wait(self._poll_interval)
+
+            if len(self._data) == 0:
+                continue
+
+            log.debug("Transmit...")
+            try:
+                self._client.reconnect()
+                self._client.publish(self._topic, json.dumps(self._data))
+                self._client.loop()
+            except Exception as e:
+                log.debug("MQTT Communication Error: %s", e)
+
+            self._data.clear()
+
+    def check_thread(self):
+        """ Return running state of thread. """
+        return self._thread.is_alive()

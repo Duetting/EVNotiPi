@@ -54,4 +54,16 @@ dongle:
    #port:  /dev/rfcomm0
    #speed: 9600
 
+mqtt:
+   enable: true
+   interval: 10
+   clientid: EVNotiPi
+   usetls: true
+   uselogger: true
+   user: mqtt-user
+   password: mqtt-password
+   topic: EVNotiPi
+   server: mqtt.org
+   port: 1883
+   keepalive: 60
 # vim: sw=3 sts=3 expandtab
