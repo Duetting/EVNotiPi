@@ -64,6 +64,9 @@ class MQTTService:
             if len(self._data) == 0:
                 continue
 
+            if (self._data['SOC_DISPLAY'] is None):
+                continue
+
             log.debug("Transmit...")
             try:
                 self._client.reconnect()
