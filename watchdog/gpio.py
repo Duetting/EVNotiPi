@@ -16,4 +16,4 @@ class Gpio:
 
     def is_car_available(self):
         """ Check if the pin has been pulled to ground """
-        return RPi.GPIO.input(self._shutdown_pin) == 1
+        return RPi.GPIO.input(self._shutdown_pin) == 0
