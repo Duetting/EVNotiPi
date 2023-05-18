@@ -3,7 +3,7 @@ from threading import Thread, Condition
 import logging
 import paho.mqtt.client as mqtt
 import json
-
+import datetime;
 
 class MQTTService:
     """ Interface to MQTT. """
@@ -17,6 +17,7 @@ class MQTTService:
         self._poll_interval = config['interval']
         self._running = False
         self._thread = None
+        self._heartbeat = 1000
 
         self._data = []
         self._data_lock = Condition()
@@ -60,6 +61,12 @@ class MQTTService:
             with self._data_lock:
                 log.debug('Waiting...')
                 self._data_lock.wait(self._poll_interval)
+
+            self._heartbeat += 1
+            if self._heartbeat >= 25:
+                self._client.reconnect()
+                self._client.publish(self._topic + "/heartbeat", json.dumps(datetime.datetime.now().isoformat()))
+                self._client.loop()
 
             if len(self._data) == 0:
                 continue
