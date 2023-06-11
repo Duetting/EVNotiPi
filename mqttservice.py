@@ -38,11 +38,15 @@ class MQTTService:
         self._thread = Thread(target=self.submit_data, name="EVNotiPi/MQTT")
         self._thread.start()
         self._car.register_data(self.data_callback)
-        self._client.connect(self._config.get('server'), self._config.get('port', 1883), self._config.get('keepalive', 60))
+        self._client.connect_async(self._config.get('server'), self._config.get('port', 1883), self._config.get('keepalive', 60))
 
     def stop(self):
         """ Stop submit thread. """
-        self._client.disconnect()
+        if self._client.is_connected:
+            try:
+                self._client.loop_stop()
+            except Exception as e:
+                self._log.error("MQTT Communication Error: %s", e)
         self._car.unregister_data(self.data_callback)
         self._running = False
         with self._data_lock:
@@ -67,10 +71,12 @@ class MQTTService:
             self._heartbeat += 1
             if self._heartbeat >= 5:
                 self._heartbeat = 0
-                self._client.reconnect()
-                self._client.publish(self._topic + "/heartbeat",
-                  json.dumps( { "Timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(), "CPU-Temp": self._cpu.temperature }))
-                self._client.loop()
+                try:
+                    self._client.loop_start()
+                    self._client.publish(self._topic + "/heartbeat",
+                      json.dumps( { "Timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(), "CPU-Temp": self._cpu.temperature }))
+                except Exception as e:
+                    log.debug("MQTT Communication Error: %s", e)
 
             if len(self._data) == 0:
                 continue
@@ -80,9 +86,7 @@ class MQTTService:
 
             log.debug("Transmit...")
             try:
-                self._client.reconnect()
                 self._client.publish(self._topic, json.dumps(self._data))
-                self._client.loop()
             except Exception as e:
                 log.debug("MQTT Communication Error: %s", e)
 
