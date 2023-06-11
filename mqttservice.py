@@ -3,7 +3,8 @@ from threading import Thread, Condition
 import logging
 import paho.mqtt.client as mqtt
 import json
-import datetime;
+import datetime
+from gpiozero import CPUTemperature
 
 class MQTTService:
     """ Interface to MQTT. """
@@ -29,6 +30,7 @@ class MQTTService:
         if 'user' in self._config:
             self._client.username_pw_set(self._config.get('user'), self._config.get('password'))
         self._topic = self._config.get('topic')
+        self._cpu = CPUTemperature()
 
     def start(self):
         """ Start submit thread. """
@@ -63,9 +65,11 @@ class MQTTService:
                 self._data_lock.wait(self._poll_interval)
 
             self._heartbeat += 1
-            if self._heartbeat >= 25:
+            if self._heartbeat >= 5:
+                self._heartbeat = 0
                 self._client.reconnect()
-                self._client.publish(self._topic + "/heartbeat", json.dumps(datetime.datetime.now().isoformat()))
+                self._client.publish(self._topic + "/heartbeat",
+                  json.dumps( { "Timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(), "CPU-Temp": self._cpu.temperature }))
                 self._client.loop()
 
             if len(self._data) == 0:

@@ -115,8 +115,9 @@ car = CAR(config['car'], dongle, watchdog, gps)
 Threads.append(car)
 
 # Init EVNotify
-EVNotify = evnotify.EVNotify(config['evnotify'], car)
-Threads.append(EVNotify)
+if 'evnotify' in config:
+    EVNotify = evnotify.EVNotify(config['evnotify'], car)
+    Threads.append(EVNotify)
 
 # Init ABRP
 if 'abrp' in config and config['abrp'].get('enable') is True:
