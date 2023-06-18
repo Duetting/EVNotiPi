@@ -94,14 +94,10 @@ Fields = (
          # Len: 25
      )
      },
-    {'cmd': b22b002, 'canrx': 0x7ce, 'cantx': 0x7c6, 'optional': True,
-     'fields': (
-         {'padding': 9},                # _,_,a,b,c,d,e,f
-         {'name': 'odo', 'width': 3},   # g,h,i
-         {'padding': 3},                # j,k,l
-         # Len: 15
-     )
-     },
+    {'cmd': '22b002', 'canrx': 0x7ce, 'cantx': 0x7c6, 'optional': True, 'absolute': True,
+     'fields': [
+         {'pos': 'g', 'name': 'odo', 'width': 3},
+         ]},
     {'cmd': b22c00b, 'canrx': 0x7a8, 'cantx': 0x7a0, 'optional': True,
      'fields': (
          {'padding': 7},                # _,_,a,b,c,d,e
@@ -119,7 +115,7 @@ Fields = (
          {'padding': 2},
      )
      },
-    {'cmd': b2101, 'canrx': 0x7ea, 'cantx': 0x7e2,
+    {'cmd': b2101, 'canrx': 0x7ea, 'cantx': 0x7e2, 'autopad': True,
      'fields': (
          {'padding': 7},
          {'name': 'gearBits', 'width': 1},    # f
@@ -128,7 +124,6 @@ Fields = (
          {'name': 'vmcu_accel', 'width': 1},  # l
          {'padding': 1},
          {'name': 'realSpeed', 'width': 2, 'scale': .01 * 1.609344},  # o,n convert mph to kph
-         {'padding': 4},
          )},
     {'computed': True,
      'fields': (
