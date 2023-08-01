@@ -134,7 +134,7 @@ class Car:
             if not self._skip_polling:
                 try:
                     self.read_dongle(data)  # readDongle updates data inplace
-                    if _watchdog.is_car_available():
+                    if self._watchdog.is_car_available():
                         self.last_data = now
                 except CanError as err:
                     log.warning(err)
