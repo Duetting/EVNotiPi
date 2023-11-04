@@ -188,15 +188,19 @@ try:
             Systemd.notify('WATCHDOG=1')
 
         if 'system' in config and 'shutdown_delay' in config['system']:
-            if (now - car.last_data > config['system']['shutdown_delay'] and
-                    not watchdog.is_car_available()):
+            if (now - car.last_data > config['system']['shutdown_delay']):
                 usercnt = int(check_output(['who', '-q']).split(b'\n')[1].split(b'=')[1])
                 if usercnt <= 1:
-                    log.info('Not charging and car off => Shutdown')
-                    check_call(['/bin/systemctl', 'poweroff'])
-                    main_running = False
+                    if not watchdog.is_car_available():
+                        log.info('Not charging and car off => Shutdown')
+                        check_call(['/bin/systemctl', 'poweroff'])
+                        main_running = False
+                    elif not car.is_available():
+                        log.info('Cannot connect to dongle => Reboot')
+                        check_call(['/bin/systemctl', 'reboot'])
+                        main_running = False                
                 elif not log_flags & LOG_USER:
-                    log.info('Not charging and car off; Not shutting down, users connected')
+                    log.info('Not connected or car off; Not shutting down or rebooting, users connected')
                     log_flags |= LOG_USER
             elif log_flags & LOG_USER:
                 log_flags &= ~LOG_USER
