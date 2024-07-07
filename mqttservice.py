@@ -22,9 +22,10 @@ class MQTTService:
 
         self._data = []
         self._data_lock = Condition()
-        self._client = mqtt.Client(self._config.get('clientid'))
+        self._client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, self._config.get('clientid'))
         if self._config.get('usetls', True):
             self._client.tls_set()
+            self._client.tls_insecure_set(True)
         if self._config.get('uselogger', True):
             self._client.enable_logger(self._log)
         if 'user' in self._config:
@@ -39,14 +40,18 @@ class MQTTService:
         self._thread.start()
         self._car.register_data(self.data_callback)
         self._client.connect_async(self._config.get('server'), self._config.get('port', 1883), self._config.get('keepalive', 60))
+        self._client.loop_start()
 
     def stop(self):
         """ Stop submit thread. """
         if self._client.is_connected:
             try:
+                self._client.disconnect()
                 self._client.loop_stop()
+                if self._config.get('uselogger', True):
+                    self._client.disable_logger()
             except Exception as e:
-                self._log.error("MQTT Communication Error: %s", e)
+                self._log.info("MQTT Communication Error: %s", e)
         self._car.unregister_data(self.data_callback)
         self._running = False
         with self._data_lock:
@@ -72,11 +77,10 @@ class MQTTService:
             if self._heartbeat >= 5:
                 self._heartbeat = 0
                 try:
-                    self._client.loop_start()
                     self._client.publish(self._topic + "/heartbeat",
                       json.dumps( { "Timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(), "CPU-Temp": self._cpu.temperature }))
                 except Exception as e:
-                    log.debug("MQTT Communication Error: %s", e)
+                    log.info("MQTT Communication Error: %s", e)
 
             if len(self._data) == 0:
                 continue
@@ -88,7 +92,7 @@ class MQTTService:
             try:
                 self._client.publish(self._topic, json.dumps(self._data))
             except Exception as e:
-                log.debug("MQTT Communication Error: %s", e)
+                log.info("MQTT Communication Error: %s", e)
 
             self._data.clear()
 

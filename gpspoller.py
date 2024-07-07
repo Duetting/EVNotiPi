@@ -53,7 +53,7 @@ class GpsPoller:
                         if len(line) == 0:
                             continue
                         try:
-                            self._log.debug("GPS line: {}".format(line))
+                            """ self._log.debug("GPS line: {}".format(line)) """
                             fix = json.loads(line)
                             if 'class' not in fix:
                                 continue
@@ -61,7 +61,7 @@ class GpsPoller:
                             if fix['class'] == 'TPV' and fix['mode'] > 1:
                                 fix_time = timegm(strptime(fix['time'],
                                                            "%Y-%m-%dT%H:%M:%S.%fZ"))
-                                self._log.debug("GPS fix at: {}".format(fix_time))
+                                """ self._log.debug("GPS fix at: {}".format(fix_time)) """
 
                                 self._last_fix.update({
                                     'device':    fix['device'],

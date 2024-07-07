@@ -15,10 +15,10 @@ class Elm327(AtBase):
         self.in_initializing = False
 
     def init_dongle(self):
-        self._log.debug("Init ELM327 dongle")
         """ Send some initializing commands to the dongle. """
         if not self._initialized and not self.in_initializing:
             self.in_initializing = True
+            self._log.debug("Init ELM327 dongle")
             try:
                 self._log.info("Initializing ELM327 Dongle")
                 cmds = (('ATZ', None),
