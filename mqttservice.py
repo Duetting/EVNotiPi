@@ -90,7 +90,7 @@ class MQTTService:
 
             log.debug("Transmit...")
             try:
-                self._client.publish(self._topic, json.dumps(self._data))
+                self._client.publish(self._topic, json.dumps(self._data), retain: true)
             except Exception as e:
                 log.info("MQTT Communication Error: %s", e)
 
