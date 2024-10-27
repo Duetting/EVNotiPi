@@ -19,7 +19,7 @@ class WebService(Bottle):
         self.car = car
         self.data = {}
         self.data_lock = Condition()
-        self.running = False
+        self._running = False
         self.server = None
         self.thread = None
 
@@ -53,7 +53,7 @@ class WebService(Bottle):
         return json.dumps(self.data)
 
     def start(self):
-        self.running = True
+        self._running = True
         self.server = WSGIServer(('::', 8080), self,
                                  handler_class=WebSocketHandler)
         self.thread = Thread(target=self.server.serve_forever)
@@ -62,7 +62,7 @@ class WebService(Bottle):
 
     def stop(self):
         self.car.unregister_data(self.data_callback)
-        self.running = False
+        self._running = False
         self.server.stop()
         self.server.close()
         self.thread.join()
