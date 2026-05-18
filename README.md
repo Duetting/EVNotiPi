@@ -10,12 +10,12 @@ Python Version of EVNotify
 ### Raspberry Pi
 - sudo apt update
 - sudo apt upgrade
-- sudo apt install python3-{pip,rpi.gpio,serial,requests,sdnotify,pyroute2,smbus,yaml,gevent,bottle} gpsd git watchdog rsyslog-
+- sudo apt install python3 gpsd git watchdog libffi-dev libssl-dev autoconf rsyslog-
 - sudo systemctl disable --now serial-getty@ttyAMA0.service
-- sudo sed -i -re "\\$agpu_mem=16\nenable_uart=1\" /boot/config.txt
-- sudo sed -i -re '/console=/ s/$/ panic=1/' /boot/cmdline.txt
+- sudo sed -i -re "\\$agpu_mem=16\nenable_uart=1\" /boot/firmware/config.txt
+- sudo sed -i -re '/console=/ s/$/ panic=1/' /boot/firmware/cmdline.txt
 - sudo sed -i -re '/max-load/ s/^#//' /etc/watchdog.conf
-- sudo sed -i -re "\\$adtparam=watchdog=on" /boot/config.txt
+- sudo sed -i -re "\\$adtparam=watchdog=on" /boot/firmware/config.txt
 #### Set up Bluetooth OBDII dongle
 - `sudo bluetoothctl`
 - [bluetooth]# `power on`
@@ -31,14 +31,24 @@ Verify that the GPS receiver is working correctly. If not, see a tutorial here: 
 - `gpsmon`  
 
 I had to make changes to /etc/default/gpsd, or else sometimes the GPS would not work after the device was off for a few hours (>4 hours?).
-- `sudo sed -i -re 's/^(DEVICES=).*/\1\"\/dev\/gps0\"/' -e 's/^(GPSD_OPTIONS=).*/\1\"-n\"/' /etc/default/gpsd`
+- `sudo sed -i -re 's/^(DEVICES=).*/\1\"\/dev\/serial0\"/' -e 's/^(GPSD_OPTIONS=).*/\1\"-n\"/' /etc/default/gpsd`
 #### Set up wifi network connections
-- Modify /etc/wpa_supplicant/wpa_supplicant.conf and add all necessary wifi connections
+- Call "sudo nmtui" and add all necessary wifi connections
+- Optional: set wlan prio: 
+  - "sudo nmcli connection modify "Wi-Fi ..." connection.autoconnect-priority 50
+  - "sudo nmcli connection modify "Wi-Fi Ioniq ..." connection.autoconnect-priority 50
 - Optional: Modify /etc/dhcpcd.conf to specify fixed IP addresses for the networks, at least for the Hotspot one as my cheap and old Android phone doesn't allow that afaik
 ### EVNotiPi
+- sudo chown :pi /opt
+- sudo chmod g+w /opt
 - sudo git clone https://github.com/Duetting/EVNotiPi /opt/evnotipi
 - cd /opt/evnotipi
-- sudo pip3 install -r requirements.txt
+- python3 -m venv .venv
+- source .venv/bin/activate
+- mkdir ~/tmp
+- export TMPDIR=~/tmp
+- pip install uv
+- uv sync
 - sudo systemctl link /opt/evnotipi/evnotipi.service
 - sudo systemctl enable evnotipi.service
 - sudo cp config.yaml.template config.yaml

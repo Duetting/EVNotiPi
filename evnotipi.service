@@ -6,11 +6,10 @@ After=network-online.target
 
 [Service]
 Type=notify
-WorkingDirectory=/opt/venv/evnotipi
-ExecStart=/opt/venv/bin/python evnotipi.py
+WorkingDirectory=/opt/evnotipi
+ExecStart=/opt/evnotipi/.venv/bin/python evnotipi.py
 ExecStartPre=-rfcomm release 0
 ExecStartPre=-rfcomm bind hci0 00:1D:A5:00:00:3C
-#Environment="PATH={{ virtualenv }}/bin:{{ ansible_env.PATH }}"
 RestartSec=5s
 Restart=on-failure
 WatchdogSec=1m
